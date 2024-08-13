@@ -1,5 +1,5 @@
 package main
 
-func render() {
+func render(maze [][]string,) {
 	
 }

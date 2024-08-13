@@ -5,12 +5,6 @@ import (
 	"math/rand"
 )
 
-var (
-	dirs    = [][]int{{-1, 0}, {0, -1}, {1, 0}, {0, 1}}
-	wallRep = "#"
-	sqrRep  = "•"
-)
-
 type Edge struct {
 	X   int
 	Y   int
@@ -25,14 +19,13 @@ type Node struct {
 }
 
 // generates a list of edges and a 2d array that is the graph
-func generateMazeStruct(size int) {
-	maze := make([][]int, size)
+func generateMazeStruct(size int) (edgeList []Edge, maze [][]int) {
+	maze = make([][]int, size)
 	for i := 0; i < size; i++ {
 		maze[i] = make([]int, size)
 	}
 	// now generate edges
 	index := 0
-	var edgeList []Edge
 	for i, row := range maze {
 		for j := range row {
 			maze[i][j] = index
@@ -77,18 +70,17 @@ func generateMazeStruct(size int) {
 	// in theory edge list should now be every edge
 	// fmt.Println(edgeList)
 	// now start kursals algorithm
-	// TODO: place this into generateMaze for modularity
-	krusals(edgeList, maze)
+	return edgeList, maze
 }
 
 // krusal's algorithm
 //
 // run once or twice no need to optimize (yet)
-func krusals(edgeList []Edge, maze [][]int) {
-	rand.Shuffle(len(edgeList), func(i, j int) {
-		tempEdge := edgeList[i]
-		edgeList[i] = edgeList[j]
-		edgeList[j] = tempEdge
+func krusals(list []Edge, maze [][]int) (edgeList []Edge, size int) {
+	rand.Shuffle(len(list), func(i, j int) {
+		tempEdge := list[i]
+		list[i] = list[j]
+		list[j] = tempEdge
 	})
 	var index = 0
 	// after being removed then also remove the backwards implementation
@@ -97,7 +89,7 @@ func krusals(edgeList []Edge, maze [][]int) {
 		// printJson(maze)
 		// time.Sleep(time.Second)
 		// removes the first element and the element that matches that element
-		tempEdge := edgeList[index]
+		tempEdge := list[index]
 		var nextNode = []int{tempEdge.X + dirs[tempEdge.Dir][0], tempEdge.Y + dirs[tempEdge.Dir][1]}
 		// if out of bounds just try again this should in theory never trigger as the bounds checking is done when making the edge
 		if nextNode[0] < 0 || nextNode[0] >= len(maze) || nextNode[1] < 0 || nextNode[1] >= len(maze) {
@@ -115,8 +107,8 @@ func krusals(edgeList []Edge, maze [][]int) {
 		// this needs to be all and it is currently just one.
 		swapAll(maze, maze[nextNode[0]][nextNode[1]], maze[tempEdge.X][tempEdge.Y])
 		// maze[nextNode[0]][nextNode[1]] = maze[tempEdge.X][tempEdge.Y]
-		findAndRemove(edgeList, tempEdge)
-		findAndRemove(edgeList, Edge{
+		findAndRemove(list, tempEdge)
+		findAndRemove(list, Edge{
 			X:   nextNode[0],
 			Y:   nextNode[1],
 			Dir: (tempEdge.Dir + 2) % 4,
@@ -124,7 +116,7 @@ func krusals(edgeList []Edge, maze [][]int) {
 	}
 	// remove null values in slice
 	var tempList []Edge
-	for _, edge := range edgeList {
+	for _, edge := range list {
 		empty := Edge{}
 		if edge != empty {
 			tempList = append(tempList, edge)
@@ -132,15 +124,16 @@ func krusals(edgeList []Edge, maze [][]int) {
 	}
 	// fmt.Println("final list: ", tempList)
 	// TODO: place this into generate maze function for modularity and better logging
-	drawMaze(tempList, len(maze))
+	return tempList, len(maze)
+	// drawMaze(tempList, len(maze))
 }
 
-// draws the maze that is represented in the edge list. 
+// draws the maze that is represented in the edge list.
 //
 // run once or twice, no need to optimize
-func drawMaze(list []Edge, size int) {
+func drawMaze(list []Edge, size int) (maze [][]string) {
 	// every other is the edge so then add whatever is in dirs. then look at maze and see what the deal is
-	maze := make([][]string, size*2-1)
+	maze = make([][]string, size*2-1)
 	for i := 0; i < len(maze); i++ {
 		// fmt.Print(" i:", i)
 		maze[i] = make([]string, len(maze))
@@ -185,13 +178,13 @@ func drawMaze(list []Edge, size int) {
 	var replaceMaze [][]string
 	var tempMaze []string
 	tempMaze = append(tempMaze, wallRep)
-	for i:= 0; i < len(maze); i++ {
+	for i := 0; i < len(maze); i++ {
 		tempMaze = append(tempMaze, wallRep)
-		
+
 	}
 	tempMaze = append(tempMaze, wallRep)
 	replaceMaze = append(replaceMaze, tempMaze)
-	for i := range maze{
+	for i := range maze {
 		var tempMaze []string
 		tempMaze = append(tempMaze, wallRep)
 		tempMaze = append(tempMaze, maze[i]...)
@@ -201,13 +194,13 @@ func drawMaze(list []Edge, size int) {
 	}
 	var tempMaze2 []string
 	tempMaze2 = append(tempMaze2, wallRep)
-	for i:= 0; i < len(maze); i++ {
+	for i := 0; i < len(maze); i++ {
 		tempMaze2 = append(tempMaze2, wallRep)
-		
+
 	}
 	tempMaze2 = append(tempMaze2, wallRep)
 	replaceMaze = append(replaceMaze, tempMaze2)
-  // fmt.Println(replaceMaze)
+	// fmt.Println(replaceMaze)
 	maze = replaceMaze
 	// for now have a for loop at the bottom displaying all the stuff
 
@@ -218,5 +211,5 @@ func drawMaze(list []Edge, size int) {
 		}
 		fmt.Println()
 	}
-
+	return maze
 }
