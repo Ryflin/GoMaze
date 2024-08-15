@@ -7,12 +7,14 @@ import (
 )
 
 func main() {
+  // var mazeSize int
+  // fmt
 	//   generateMaze(5)
-	edgeList, tempMaze := generateMazeStruct(8)
+	edgeList, tempMaze := generateMazeStruct(100)
 	edgeList, size := krusals(edgeList, tempMaze)
 	maze := drawMaze(edgeList, size)
-	player := Player{X: 1, Y: 1, Symbol: "R"}
-	mazeGlobal = player.placePlayer(maze)
+	player := Player{X: 1, Y: 1, Symbol: TermBlue + "R" + TermReset}
+	maze = player.placePlayer(maze)
 	// TODO implement capture input (for now wars (wasd for colemak))
 	// method capture key and re-render
 	// game loop
@@ -35,9 +37,9 @@ func main() {
 			panic("keyboard interupt")
 		}
 		if dir, exists := inputs[string(event.Rune)]; exists {
-			maze = player.move(maze, dir)
+			maze = player.move(maze, dir, turns)
 		}
-		render(maze)
+		render(player.viewPort(maze, 10))
 		turns++
 		if turns%moveStep == 0 {
 			userInput, err = keyboard.GetKeys(moveStep)

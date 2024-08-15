@@ -208,3 +208,9 @@ func drawMaze(list []Edge, size int) (maze [][]string) {
 
 	return maze
 }
+
+func makeExit() {
+
+}
+
+// TODO: generate cycles before you add an enemy. Without cylces hide and seek has a very static gameplay loop. the only option is to nerf the enemy to pacman levels
