@@ -1,5 +1,6 @@
 package main
 
+
 type Player struct {
 	X      int
 	Y      int
@@ -11,11 +12,11 @@ type Player struct {
 func (this *Player) move(maze [][]string, dir int) (newMaze [][]string) {
 	newX := this.X + dirs[dir][0]
 	newY := this.Y + dirs[dir][1]
-	if maze[newX][newY] != wallRep {
+	if maze[newX][newY] == emptyTile {
 		mazeMutex.Lock()
 		maze[this.X][this.Y] = emptyTile
-		this.X = newX + 1
-		this.Y = newY + 1
+		this.X = newX + dirs[dir][0]
+		this.Y = newY + dirs[dir][1]
 		maze[this.X][this.Y] = this.Symbol
 		mazeMutex.Unlock()
 	}

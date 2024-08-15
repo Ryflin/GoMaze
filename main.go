@@ -1,18 +1,50 @@
 package main
 
 import (
+	"time"
 
+	"github.com/eiannone/keyboard"
 )
 
 func main() {
-//   generateMaze(5)
-  edgeList, tempMaze := generateMazeStruct(10)
-  edgeList, size := krusals(edgeList, tempMaze)
-  maze := drawMaze(edgeList, size)
-//   drawMaze([]Edge{{X: 0, Y: 0, Dir: 2}, {X: 1, Y: 0, Dir: 0}}, 3)
-
-  // game loop
-  for ; ; {
-    
-  }
+	//   generateMaze(5)
+	edgeList, tempMaze := generateMazeStruct(8)
+	edgeList, size := krusals(edgeList, tempMaze)
+	maze := drawMaze(edgeList, size)
+	player := Player{X: 1, Y: 1, Symbol: "R"}
+	mazeGlobal = player.placePlayer(maze)
+	// TODO implement capture input (for now wars (wasd for colemak))
+	// method capture key and re-render
+	// game loop
+	turns := 0
+	userInput, err := keyboard.GetKeys(moveStep)
+	if err != nil {
+		println(err.Error())
+		panic("I really don't know what to do here")
+	}
+	defer func() {
+		keyboard.Close()
+	}()
+	for {
+		event := <-userInput
+		if event.Err != nil {
+			println("error in the event")
+			panic(event.Err)
+		}
+		if event.Key == keyboard.KeyCtrlC {
+			panic("keyboard interupt")
+		}
+		if dir, exists := inputs[string(event.Rune)]; exists {
+			maze = player.move(maze, dir)
+		}
+		render(maze)
+		turns++
+		if turns%moveStep == 0 {
+			userInput, err = keyboard.GetKeys(moveStep)
+			if err != nil {
+				panic(err)
+			}
+		}
+    time.Sleep(time.Second / 100)
+	}
 }

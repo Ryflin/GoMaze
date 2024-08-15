@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 )
 
 func render(maze [][]string) {
@@ -22,5 +21,4 @@ func render(maze [][]string) {
 		fmt.Print(escUp)
 		nullable = i
 	}
-	time.Sleep(time.Second)
 }
