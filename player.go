@@ -2,9 +2,10 @@ package main
 
 import (
 	"math"
-
 )
 
+// TODO remove the mutexes as this is no longer async
+// when doing the async use a temporary variable to store the new info and swap in when mutex is unlocked.
 
 type Player struct {
 	X      int
@@ -12,79 +13,88 @@ type Player struct {
 	Hunter bool
 	Symbol string
 	Crumbs []coords
-	Color string
+	Color  string
 }
 type coords struct {
 	X int
 	Y int
 }
 
-
-func (this *Player)breadcrumb(maze [][]string, turn int) (alteredMaze [][]string) {
+func (player *Player) breadcrumb(maze [][]string, turn int) (alteredMaze [][]string) {
 	emptyCoords := coords{}
-	index := turn % len(this.Crumbs)
-	if this.Crumbs[index] != emptyCoords {
+	index := turn % len(player.Crumbs)
+	currentCoords := coords{X: player.X, Y: player.Y}
+	// need to also remove duplicates
+	for i, val := range player.Crumbs {
+		if val == currentCoords {
+			player.Crumbs[i] = emptyCoords
+		}
+	}
+	if player.Crumbs[index] != emptyCoords {
 		// decrumb
-		coord := this.Crumbs[index]
+		coord := player.Crumbs[index]
 		maze[coord.X][coord.Y] = emptyTile
 	}
+
 	// new crumb
-	this.Crumbs[index] = coords{X:  this.X, Y: this.Y}
-	maze[this.X][this.Y] = this.Color + emptyTile + TermReset
+	player.Crumbs[index] = currentCoords
+	maze[player.X][player.Y] = player.Color + emptyTile + TermReset
 	return maze
 }
 
 // move the player around
-func (this *Player) move(maze [][]string, dir int, turn int) (newMaze [][]string) {
+func (player *Player) move(maze [][]string, dir int, turn int) (newMaze [][]string) {
 	// println(this.X, this.Y)
-	newX := this.X + dirs[dir][0]
-	newY := this.Y + dirs[dir][1]
+	newX := player.X + dirs[dir][0]
+	newY := player.Y + dirs[dir][1]
 	// if maze[newX][newY] == emptyTile {
+	if true {
+		maze[player.X][player.Y] = emptyTile
 		mazeMutex.Lock()
-		maze[this.X][this.Y] = emptyTile
-		maze = this.breadcrumb(maze, turn)
-		this.X = newX + dirs[dir][0]
-		this.Y = newY + dirs[dir][1]
-		maze[this.X][this.Y] = this.Symbol
+		maze = player.breadcrumb(maze, turn)
+		player.X = newX + dirs[dir][0]
+		player.Y = newY + dirs[dir][1]
+		maze[player.X][player.Y] = player.Symbol
 		mazeMutex.Unlock()
-
-	// }
+	}
 
 	return maze
 }
+
 // places the player, also contains all the defaults
-func (this *Player) placePlayer(maze [][]string) (newMaze [][]string) {
-	for maze[this.X][this.Y] != emptyTile {
-		if maze[this.X][this.Y+1] == emptyTile {
-			this.Y += 1
+func (player *Player) placePlayer(maze [][]string) (newMaze [][]string) {
+	for maze[player.X][player.Y] != emptyTile {
+		if maze[player.X][player.Y+1] == emptyTile {
+			player.Y += 1
 		} else {
-			this.X += 1
+			player.X += 1
 		}
 	}
-	if len(this.Crumbs) == 0 {
-		this.Crumbs = make([]coords, 10)
+	if len(player.Crumbs) == 0 {
+		player.Crumbs = make([]coords, 10)
 	}
-	if this.Color == "" {
-		this.Color = TermGreen
+	if player.Color == "" {
+		player.Color = TermGreen
 	}
 	mazeMutex.Lock()
-	maze[this.X][this.Y] = this.Symbol
+	maze[player.X][player.Y] = player.Symbol
 	mazeMutex.Unlock()
 	return maze
 }
+
 // returns the viewport that this player sees
-func (this *Player)viewPort(maze [][]string, size int) (alteredMaze [][]string) {
-	yView := size + this.Y
-	xView := size + this.X
-	nyView := this.Y - size
-	nxView := this.X - size
+func (player *Player) viewPort(maze [][]string, size int) (alteredMaze [][]string) {
+	yView := size + player.Y
+	xView := size + player.X
+	nyView := player.Y - size
+	nxView := player.X - size
 	// println(yView, nyView)
 	if nyView < 0 {
 		yView += int(math.Abs(float64(nyView)))
 		nyView = 0
-	} else if yView > len(maze[this.X]) {
-		nyView += len(maze[this.X]) - int(math.Abs(float64(yView)))
-		yView = len(maze[this.X]) 
+	} else if yView > len(maze[player.X]) {
+		nyView += len(maze[player.X]) - int(math.Abs(float64(yView)))
+		yView = len(maze[player.X])
 	}
 	if nxView < 0 {
 		xView += int(math.Abs(float64(nxView)))
@@ -93,10 +103,10 @@ func (this *Player)viewPort(maze [][]string, size int) (alteredMaze [][]string) 
 		nxView += len(maze) - int(math.Abs(float64(xView)))
 		xView = len(maze)
 	}
-	for i := 0; nxView + i < xView; i++ {
+	for i := 0; nxView+i < xView; i++ {
 		var tempRow []string
-		for j := 0; nyView + j < yView; j++ {
-			tempRow = append(tempRow, maze[nxView + i][nyView + j])
+		for j := 0; nyView+j < yView; j++ {
+			tempRow = append(tempRow, maze[nxView+i][nyView+j])
 		}
 		alteredMaze = append(alteredMaze, tempRow)
 	}
