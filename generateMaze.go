@@ -140,7 +140,7 @@ func drawMaze(list []Edge, size int) (maze [][]string) {
 	}
 	for i := range maze {
 		for j := range maze[i] {
-			maze[i][j] = sqrRep
+			maze[i][j] = emptyTile
 		}
 		if i%2 != 0 {
 			for j := range maze[i] {
@@ -171,7 +171,7 @@ func drawMaze(list []Edge, size int) (maze [][]string) {
 	for i := range maze {
 		for j := range maze[i] {
 			if maze[i][j] == "+" {
-				maze[i][j] = sqrRep
+				maze[i][j] = emptyTile
 			}
 		}
 	}
@@ -205,11 +205,6 @@ func drawMaze(list []Edge, size int) (maze [][]string) {
 	// for now have a for loop at the bottom displaying all the stuff
 
 	// printJson(maze)
-	for _, row := range maze {
-		for _, val := range row {
-			fmt.Print(val, " ")
-		}
-		fmt.Println()
-	}
+
 	return maze
 }
