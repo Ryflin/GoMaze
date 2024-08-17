@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"time"
 )
 
 // TODO remove the mutexes as this is no longer async
@@ -47,11 +48,19 @@ func (player *Player) move(maze [][]string, dir int, turn int) (newMaze [][]stri
 	// println(this.X, this.Y)
 	newX := player.X + dirs[dir][0]
 	newY := player.Y + dirs[dir][1]
-	// if maze[newX][newY] == emptyTile {
-	if true {
+	if maze[newX][newY] == emptyTile {
+	// if true {
 		maze[player.X][player.Y] = emptyTile
 		mazeMutex.Lock()
 		maze = player.breadcrumb(maze, turn)
+		player.X = newX
+		player.Y = newY
+		maze[player.X][player.Y] = player.Symbol
+		render(player.viewPort(maze, viewPortSize))
+		mazeMutex.Unlock()
+		time.Sleep(time.Second / 15)
+		mazeMutex.Lock()
+		maze[newX][newY] = emptyTile
 		player.X = newX + dirs[dir][0]
 		player.Y = newY + dirs[dir][1]
 		maze[player.X][player.Y] = player.Symbol
@@ -71,10 +80,10 @@ func (player *Player) placePlayer(maze [][]string) (newMaze [][]string) {
 		}
 	}
 	if len(player.Crumbs) == 0 {
-		player.Crumbs = make([]coords, 10)
+		player.Crumbs = make([]coords, 20)
 	}
 	if player.Color == "" {
-		player.Color = TermGreen
+		player.Color = CrumbBlue
 	}
 	mazeMutex.Lock()
 	maze[player.X][player.Y] = player.Symbol

@@ -10,10 +10,10 @@ func main() {
   // var mazeSize int
   // fmt
 	//   generateMaze(5)
-	edgeList, tempMaze := generateMazeStruct(100)
+	edgeList, tempMaze := generateMazeStruct(50)
 	edgeList, size := krusals(edgeList, tempMaze)
 	maze := drawMaze(edgeList, size)
-	player := Player{X: 1, Y: 1, Symbol: TermBlue + "R" + TermReset}
+	player := Player{X: 1, Y: 1, Symbol: TermBlue + " R " + TermReset}
 	maze = player.placePlayer(maze)
 	// TODO implement capture input (for now wars (wasd for colemak))
 	// method capture key and re-render
@@ -39,7 +39,7 @@ func main() {
 		if dir, exists := inputs[string(event.Rune)]; exists {
 			maze = player.move(maze, dir, turns)
 		}
-		render(player.viewPort(maze, 10))
+		render(player.viewPort(maze, viewPortSize))
 		turns++
 		if turns%moveStep == 0 {
 			userInput, err = keyboard.GetKeys(moveStep)

@@ -122,9 +122,20 @@ func krusals(list []Edge, maze [][]int) (edgeList []Edge, size int) {
 			tempList = append(tempList, edge)
 		}
 	}
+	// println(len(tempList))
+	tempList = generateCycles(tempList)
+	list = []Edge{}
+	// printJson(list)
+	for _, edge := range tempList {
+		empty := Edge{}
+		if edge != empty {
+			list = append(list, edge)
+		}
+	}
+	// println(len(list))
 	// fmt.Println("final list: ", tempList)
 	// TODO: place this into generate maze function for modularity and better logging
-	return tempList, len(maze)
+	return list, len(maze)
 	// drawMaze(tempList, len(maze))
 }
 
@@ -153,18 +164,18 @@ func drawMaze(list []Edge, size int) (maze [][]string) {
 	for _, edge := range list {
 		x := edge.X*2 + dirs[edge.Dir][0]
 		y := edge.Y*2 + dirs[edge.Dir][1]
-		maze[x][y] = wallRep
+		maze[x][y] = wallEnd
 		if x+1 < len(maze) && x+1 > 0 && maze[x+1][y] == "+" {
-			maze[x+1][y] = wallRep
+			maze[x+1][y] = wallEnd
 		}
 		if y+1 < len(maze) && y+1 > 0 && maze[x][y+1] == "+" {
-			maze[x][y+1] = wallRep
+			maze[x][y+1] = wallEnd
 		}
 		if x-1 < len(maze) && x-1 > 0 && maze[x-1][y] == "+" {
-			maze[x-1][y] = wallRep
+			maze[x-1][y] = wallEnd
 		}
 		if y-1 < len(maze) && y-1 > 0 && maze[x][y-1] == "+" {
-			maze[x][y-1] = wallRep
+			maze[x][y-1] = wallEnd
 		}
 	}
 
@@ -177,28 +188,28 @@ func drawMaze(list []Edge, size int) (maze [][]string) {
 	}
 	var replaceMaze [][]string
 	var tempMaze []string
-	tempMaze = append(tempMaze, wallRep)
+	tempMaze = append(tempMaze, wallEnd)
 	for i := 0; i < len(maze); i++ {
-		tempMaze = append(tempMaze, wallRep)
+		tempMaze = append(tempMaze, wallEnd)
 
 	}
-	tempMaze = append(tempMaze, wallRep)
+	tempMaze = append(tempMaze, wallEnd)
 	replaceMaze = append(replaceMaze, tempMaze)
 	for i := range maze {
 		var tempMaze []string
-		tempMaze = append(tempMaze, wallRep)
+		tempMaze = append(tempMaze, wallEnd)
 		tempMaze = append(tempMaze, maze[i]...)
-		tempMaze = append(tempMaze, wallRep)
+		tempMaze = append(tempMaze, wallEnd)
 		// fmt.Println(tempMaze)
 		replaceMaze = append(replaceMaze, tempMaze)
 	}
 	var tempMaze2 []string
-	tempMaze2 = append(tempMaze2, wallRep)
+	tempMaze2 = append(tempMaze2, wallEnd)
 	for i := 0; i < len(maze); i++ {
-		tempMaze2 = append(tempMaze2, wallRep)
+		tempMaze2 = append(tempMaze2, wallEnd)
 
 	}
-	tempMaze2 = append(tempMaze2, wallRep)
+	tempMaze2 = append(tempMaze2, wallEnd)
 	replaceMaze = append(replaceMaze, tempMaze2)
 	// fmt.Println(replaceMaze)
 	maze = replaceMaze
@@ -212,5 +223,28 @@ func drawMaze(list []Edge, size int) (maze [][]string) {
 func makeExit() {
 
 }
+
+func generateCycles(edgeList []Edge) (newEdgeList []Edge) {
+	RemoveWallRate := 2
+	println(len(edgeList))
+	for i := 0; i < len(edgeList)/RemoveWallRate; i++ {
+		randIndex := rand.Intn(RemoveWallRate) + i*RemoveWallRate
+		findAndRemove(edgeList, edgeList[randIndex])
+	}
+
+	return edgeList
+}
+
+// func generateBiomes(maze [][]string) (biomedMaze [][]string) {
+
+// 	for i, row := range maze {
+// 		for j, val := range row {
+// 			if val == wallEnd {
+
+// 			}
+// 		}
+// 	}
+// return nil	
+// }
 
 // TODO: generate cycles before you add an enemy. Without cylces hide and seek has a very static gameplay loop. the only option is to nerf the enemy to pacman levels

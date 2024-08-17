@@ -12,7 +12,8 @@ func render(maze [][]string) {
 	// }
 	for _, row := range maze {
 		for _, val := range row {
-			fmt.Print(val, " ")
+			
+			fmt.Print(val)
 		}
 		fmt.Println()
 	}
