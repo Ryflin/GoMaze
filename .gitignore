@@ -1,0 +1,4 @@
+*.json
+ui.go
+go.mod
+go.sum 
