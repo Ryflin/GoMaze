@@ -139,6 +139,14 @@ func krusals(list []Edge, maze [][]int) (edgeList []Edge, size int) {
 	// drawMaze(tempList, len(maze))
 }
 
+// func createGraphEdgeList(maze [][]string) (edgeList map[node]string) {
+// 	for i, row := range maze {
+// 		for j, val := range row {
+// 			if
+// 		}
+// 	}
+// }
+
 // draws the maze that is represented in the edge list.
 //
 // run once or twice, no need to optimize
@@ -216,12 +224,23 @@ func drawMaze(list []Edge, size int) (maze [][]string) {
 	// for now have a for loop at the bottom displaying all the stuff
 
 	// printJson(maze)
+	maze = makeExit(maze, 2)
+	maze = generateBiomes(maze)
 
-	return maze
+	return generateBiomes(maze)
 }
 
-func makeExit() {
-
+func makeExit(maze [][]string, numberOfExits int) (newMaze [][]string) {
+	for i := 0; i < numberOfExits; i++ {
+		exitX := rand.Intn(len(maze))
+		exitY := rand.Intn(len(maze[exitX]))
+		if maze[exitX][exitY] == wallEnd || exitX%2 == 0 || exitY%2 == 0 {
+			i--
+		} else {
+			maze[exitX][exitY] = exit
+		}
+	}
+	return maze
 }
 
 func generateCycles(edgeList []Edge) (newEdgeList []Edge) {
@@ -235,16 +254,20 @@ func generateCycles(edgeList []Edge) (newEdgeList []Edge) {
 	return edgeList
 }
 
-// func generateBiomes(maze [][]string) (biomedMaze [][]string) {
-
-// 	for i, row := range maze {
-// 		for j, val := range row {
-// 			if val == wallEnd {
-
-// 			}
-// 		}
-// 	}
-// return nil	
-// }
+func generateBiomes(maze [][]string) (biomedMaze [][]string) {
+	rand.Shuffle(len(biomeList), func(i, j int) {
+		temp := biomeList[i]
+		biomeList[i] = biomeList[j]
+		biomeList[j] = temp
+	})
+	for i, row := range maze {
+		for j, val := range row {
+			if val == wallEnd {
+				maze[i][j] = biomeList[(i/biomeSize+j/biomeSize)/2%len(biomeList)] + "   " + TermReset
+			}
+		}
+	}
+	return maze
+}
 
 // TODO: generate cycles before you add an enemy. Without cylces hide and seek has a very static gameplay loop. the only option is to nerf the enemy to pacman levels

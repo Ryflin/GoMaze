@@ -11,8 +11,7 @@ func render(maze [][]string) {
 
 	// }
 	for _, row := range maze {
-		for _, val := range row {
-			
+		for _, val := range row {	
 			fmt.Print(val)
 		}
 		fmt.Println()
@@ -20,6 +19,5 @@ func render(maze [][]string) {
 
 	for i := 0; i < len(maze); i++ {
 		fmt.Print(escUp)
-		nullable = i
 	}
 }

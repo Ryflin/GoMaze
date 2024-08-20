@@ -6,25 +6,62 @@ import (
 )
 
 // TODO remove the mutexes as this is no longer async
-// when doing the async use a temporary variable to store the new info and swap in when mutex is unlocked.
+// when doing the async use a temporary variable to store the new info and swap in when mutex is unlocked.\
+
+// player options so that the player can be initialized with defaults
+type PlayerOptions func(*Player)
+
+func withCoords(coordinates Coords) PlayerOptions {
+	return func(p *Player) {
+		p.X = coordinates.X
+		p.Y = coordinates.Y
+	}
+}
+func withSymbol(Symbol string) PlayerOptions {
+	return func(p *Player) {
+		p.Symbol = Symbol
+	}
+}
+func withColor(Color string) PlayerOptions {
+	return func(p *Player) {
+		p.Color = Color
+	}
+}
+func withCrumbs(Crumbs []Coords) PlayerOptions {
+	return func(p *Player) {
+		p.Crumbs = Crumbs
+	}
+}
+func newPlayer(opts ...PlayerOptions) *Player {
+	player := &Player{
+		X:      1,
+		Y:      2,
+		Symbol: " R ",
+		Crumbs: make([]Coords, 20),
+		Color:  TermBlue,
+	}
+	for _, opt := range opts {
+		opt(player)
+	}
+	return player
+}
 
 type Player struct {
-	X      int
-	Y      int
-	Hunter bool
-	Symbol string
-	Crumbs []coords
+	X      int `json:"X"`
+	Y      int `json:"Y"`
+	Symbol string 
+	Crumbs []Coords `json:"Crumbs"`
 	Color  string
 }
-type coords struct {
+type Coords struct {
 	X int
 	Y int
 }
 
 func (player *Player) breadcrumb(maze [][]string, turn int) (alteredMaze [][]string) {
-	emptyCoords := coords{}
+	emptyCoords := Coords{}
 	index := turn % len(player.Crumbs)
-	currentCoords := coords{X: player.X, Y: player.Y}
+	currentCoords := Coords{X: player.X, Y: player.Y}
 	// need to also remove duplicates
 	for i, val := range player.Crumbs {
 		if val == currentCoords {
@@ -46,10 +83,13 @@ func (player *Player) breadcrumb(maze [][]string, turn int) (alteredMaze [][]str
 // move the player around
 func (player *Player) move(maze [][]string, dir int, turn int) (newMaze [][]string) {
 	// println(this.X, this.Y)
+	if maze[player.X][player.Y] != player.Symbol {
+		println("You were overwritten by the hunter")
+	}
 	newX := player.X + dirs[dir][0]
 	newY := player.Y + dirs[dir][1]
 	if maze[newX][newY] == emptyTile {
-	// if true {
+		// if true {
 		maze[player.X][player.Y] = emptyTile
 		mazeMutex.Lock()
 		maze = player.breadcrumb(maze, turn)
@@ -63,6 +103,13 @@ func (player *Player) move(maze [][]string, dir int, turn int) (newMaze [][]stri
 		maze[newX][newY] = emptyTile
 		player.X = newX + dirs[dir][0]
 		player.Y = newY + dirs[dir][1]
+		if maze[player.X][player.Y] == exit {
+			// TODO: add something better to the win
+			println("YOU WIN!!")
+			winState = 1
+			return maze
+			// syscall.Exit(0)
+		}
 		maze[player.X][player.Y] = player.Symbol
 		mazeMutex.Unlock()
 	}
@@ -80,7 +127,7 @@ func (player *Player) placePlayer(maze [][]string) (newMaze [][]string) {
 		}
 	}
 	if len(player.Crumbs) == 0 {
-		player.Crumbs = make([]coords, 20)
+		player.Crumbs = make([]Coords, 20)
 	}
 	if player.Color == "" {
 		player.Color = CrumbBlue
@@ -120,4 +167,12 @@ func (player *Player) viewPort(maze [][]string, size int) (alteredMaze [][]strin
 		alteredMaze = append(alteredMaze, tempRow)
 	}
 	return alteredMaze
+}
+
+// renders with the information that the player has access to
+func (player *Player) render(maze [][]string) {
+	var infoRow []string
+
+	infoRow = append(infoRow, "Hunter")
+
 }
