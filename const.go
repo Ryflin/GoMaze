@@ -7,10 +7,10 @@ import (
 )
 
 var (
- // this is just a comment that I want to put in because I want to. 
+	// this stores the directions which makes searching easier
 	dirs = [][]int{{-1, 0}, {0, -1}, {1, 0}, {0, 1}}
 	// This is for putting required values you don't want to use into a bucket. bad practice I know but makes other things more convienient
-	inputs    = map[string]int{"w": 0, "a": 1, "r": 2, "s": 3}
+	inputs    = map[string]int{"w": 0, "a": 1, "s": 2, "d": 3}
 	mazeMutex sync.Mutex
 	wallEnd   = HighlightWhite + "   " + TermReset
 	biomeList = []string{HighlightBlue, HighlightCyan, HighlightGreen, HighlightMagenta, HighlightRed, HighlightYellow}

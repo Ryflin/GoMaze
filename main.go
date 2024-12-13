@@ -7,15 +7,20 @@ import (
 	"github.com/eiannone/keyboard"
 )
 
+// I wanted to add a cpu hunter that chases the player I am not concerned about client side security and such for now
+
 func main() {
 	// var mazeSize int
 	// fmt
 	//   generateMaze(5)
+
 	edgeList, tempMaze := generateMazeStruct(20)
 	edgeList, size := krusals(edgeList, tempMaze)
-	maze := drawMaze(edgeList, size)
-	player := *newPlayer(withColor(CrumbBlue), withCoords(Coords{X: 1, Y: 1}), withSymbol(TermBlue + " R " + TermReset), withCrumbs(make([]Coords, 40)))
+	maze := drawMaze(&edgeList, size)
+	player := *newPlayer(withColor(CrumbBlue), withCoords(Coords{X: 1, Y: 1}), withSymbol(TermBlue+" R "+TermReset), withCrumbs(make([]Coords, 40)))
 	maze = player.placePlayer(maze)
+	playerView := player.viewPort(&maze, viewPortSize)
+	makeNewUi(playerView)
 	// TODO implement capture input (for now wars (wasd for colemak))
 	// method capture key and re-render
 	// game loop
@@ -28,6 +33,7 @@ func main() {
 	defer func() {
 		keyboard.Close()
 	}()
+	time.Sleep(1000)
 	for {
 		event := <-userInput
 		if event.Err != nil {
@@ -40,7 +46,7 @@ func main() {
 		if dir, exists := inputs[string(event.Rune)]; exists {
 			maze = player.move(maze, dir, turns)
 		}
-		render(player.viewPort(maze, viewPortSize))
+		updateUI(player.viewPort(&maze, viewPortSize))
 		// maze, player = syncInfo(maze, player)
 		turns++
 		if turns%moveStep == 0 {
@@ -67,5 +73,3 @@ func lose(player Player) {
 	println("You lost sorry")
 	syscall.Exit(0)
 }
-
-

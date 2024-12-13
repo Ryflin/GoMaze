@@ -150,7 +150,7 @@ func krusals(list []Edge, maze [][]int) (edgeList []Edge, size int) {
 // draws the maze that is represented in the edge list.
 //
 // run once or twice, no need to optimize
-func drawMaze(list []Edge, size int) (maze [][]string) {
+func drawMaze(list *[]Edge, size int) (maze [][]string) {
 	// every other is the edge so then add whatever is in dirs. then look at maze and see what the deal is
 	maze = make([][]string, size*2-1)
 	for i := 0; i < len(maze); i++ {
@@ -169,7 +169,7 @@ func drawMaze(list []Edge, size int) (maze [][]string) {
 		}
 	}
 	// new maze creation handled, now on to filling maze based on list
-	for _, edge := range list {
+	for _, edge := range *list {
 		x := edge.X*2 + dirs[edge.Dir][0]
 		y := edge.Y*2 + dirs[edge.Dir][1]
 		maze[x][y] = wallEnd
@@ -224,23 +224,21 @@ func drawMaze(list []Edge, size int) (maze [][]string) {
 	// for now have a for loop at the bottom displaying all the stuff
 
 	// printJson(maze)
-	maze = makeExit(maze, 2)
-	maze = generateBiomes(maze)
-
-	return generateBiomes(maze)
+	makeExit(&maze, 2)
+	generateBiomes(&maze)
+	return maze
 }
 
-func makeExit(maze [][]string, numberOfExits int) (newMaze [][]string) {
+func makeExit(maze *[][]string, numberOfExits int) {
 	for i := 0; i < numberOfExits; i++ {
-		exitX := rand.Intn(len(maze))
-		exitY := rand.Intn(len(maze[exitX]))
-		if maze[exitX][exitY] == wallEnd || exitX%2 == 0 || exitY%2 == 0 {
+		exitX := rand.Intn(len(*maze))
+		exitY := rand.Intn(len((*maze)[exitX]))
+		if (*maze)[exitX][exitY] == wallEnd || exitX%2 == 0 || exitY%2 == 0 {
 			i--
 		} else {
-			maze[exitX][exitY] = exit
+			(*maze)[exitX][exitY] = exit
 		}
 	}
-	return maze
 }
 
 func generateCycles(edgeList []Edge) (newEdgeList []Edge) {
@@ -254,20 +252,19 @@ func generateCycles(edgeList []Edge) (newEdgeList []Edge) {
 	return edgeList
 }
 
-func generateBiomes(maze [][]string) (biomedMaze [][]string) {
+func generateBiomes(maze *[][]string) () {
 	rand.Shuffle(len(biomeList), func(i, j int) {
 		temp := biomeList[i]
 		biomeList[i] = biomeList[j]
 		biomeList[j] = temp
 	})
-	for i, row := range maze {
+	for i, row := range *maze {
 		for j, val := range row {
 			if val == wallEnd {
-				maze[i][j] = biomeList[(i/biomeSize+j/biomeSize)/2%len(biomeList)] + "   " + TermReset
+				(*maze)[i][j] = biomeList[(i/biomeSize+j/biomeSize)/2%len(biomeList)] + "   " + TermReset
 			}
 		}
 	}
-	return maze
 }
 
 // TODO: generate cycles before you add an enemy. Without cylces hide and seek has a very static gameplay loop. the only option is to nerf the enemy to pacman levels

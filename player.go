@@ -91,15 +91,12 @@ func (player *Player) move(maze [][]string, dir int, turn int) (newMaze [][]stri
 	if maze[newX][newY] == emptyTile {
 		// if true {
 		maze[player.X][player.Y] = emptyTile
-		mazeMutex.Lock()
-		maze = player.breadcrumb(maze, turn)
+			maze = player.breadcrumb(maze, turn)
 		player.X = newX
 		player.Y = newY
 		maze[player.X][player.Y] = player.Symbol
-		render(player.viewPort(maze, viewPortSize))
-		mazeMutex.Unlock()
+		render(player.viewPort(&maze, viewPortSize))
 		time.Sleep(time.Second / 15)
-		mazeMutex.Lock()
 		maze[newX][newY] = emptyTile
 		player.X = newX + dirs[dir][0]
 		player.Y = newY + dirs[dir][1]
@@ -111,7 +108,6 @@ func (player *Player) move(maze [][]string, dir int, turn int) (newMaze [][]stri
 			// syscall.Exit(0)
 		}
 		maze[player.X][player.Y] = player.Symbol
-		mazeMutex.Unlock()
 	}
 
 	return maze
@@ -132,14 +128,12 @@ func (player *Player) placePlayer(maze [][]string) (newMaze [][]string) {
 	if player.Color == "" {
 		player.Color = CrumbBlue
 	}
-	mazeMutex.Lock()
 	maze[player.X][player.Y] = player.Symbol
-	mazeMutex.Unlock()
 	return maze
 }
 
 // returns the viewport that this player sees
-func (player *Player) viewPort(maze [][]string, size int) (alteredMaze [][]string) {
+func (player *Player) viewPort(maze *[][]string, size int) (alteredMaze [][]string) {
 	yView := size + player.Y
 	xView := size + player.X
 	nyView := player.Y - size
@@ -148,21 +142,21 @@ func (player *Player) viewPort(maze [][]string, size int) (alteredMaze [][]strin
 	if nyView < 0 {
 		yView += int(math.Abs(float64(nyView)))
 		nyView = 0
-	} else if yView > len(maze[player.X]) {
-		nyView += len(maze[player.X]) - int(math.Abs(float64(yView)))
-		yView = len(maze[player.X])
+	} else if yView > len((*maze)[player.X]) {
+		nyView += len((*maze)[player.X]) - int(math.Abs(float64(yView)))
+		yView = len((*maze)[player.X])
 	}
 	if nxView < 0 {
 		xView += int(math.Abs(float64(nxView)))
 		nxView = 0
-	} else if xView > len(maze) {
-		nxView += len(maze) - int(math.Abs(float64(xView)))
-		xView = len(maze)
+	} else if xView > len(*maze) {
+		nxView += len(*maze) - int(math.Abs(float64(xView)))
+		xView = len(*maze)
 	}
 	for i := 0; nxView+i < xView; i++ {
 		var tempRow []string
 		for j := 0; nyView+j < yView; j++ {
-			tempRow = append(tempRow, maze[nxView+i][nyView+j])
+			tempRow = append(tempRow, (*maze)[nxView+i][nyView+j])
 		}
 		alteredMaze = append(alteredMaze, tempRow)
 	}
