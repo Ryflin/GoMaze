@@ -21,7 +21,6 @@ func main() {
 	maze = player.placePlayer(maze)
 	playerView := player.viewPort(&maze, viewPortSize)
 	makeNewUi(playerView)
-	// TODO implement capture input (for now wars (wasd for colemak))
 	// method capture key and re-render
 	// game loop
 	turns := 0
